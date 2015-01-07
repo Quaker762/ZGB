@@ -33,10 +33,10 @@
 			<Add option="-Wall" />
 			<Add option="-fexceptions" />
 		</Compiler>
-		<Unit filename="CPU.cpp" />
-		<Unit filename="CPU.h" />
-		<Unit filename="Global.h" />
-		<Unit filename="main.cpp" />
+		<Unit filename="include/CPU.h" />
+		<Unit filename="include/Global.h" />
+		<Unit filename="src/CPU.cpp" />
+		<Unit filename="src/main.cpp" />
 		<Extensions>
 			<code_completion />
 			<envvars />

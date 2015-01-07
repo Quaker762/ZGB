@@ -1,4 +1,4 @@
-#include "CPU.h"
+#include "../include/CPU.h"
 
 /**
     Class Constructor
@@ -76,37 +76,52 @@ uint8_t Z80::cycle()
             setFlagBit(SUB_BIT); //We performed a subtraction! Set sub bit
 
             writeReg(B, b);
+
+            return 4;
+            break;
         }
-        return 4;
-        break;
     case 0x06:
         writeReg(B, getProgramCounter() + 1);
         incrementProgramCounter();
         return 8;
         break;
-    case 0x07: //Rotate Left Through Carry...
+    case 0x07: //Rotate A Left Through Carry...
         {
             //All Bits of FLAGS except carry are rest
             unsetFlagBit(ZERO_BIT);
             unsetFlagBit(HC_BIT);
             unsetFlagBit(SUB_BIT);
+
+            return 4;
+            break;
         }
-        return 4;
-        break;
-    case 0x08:
-        return 4;
-        break;
+    case 0x08: //Load SP into 16-bit immediate address
+        {
+            uint16_t addr = memRead16(pc, pc + 1);
+            memWrite16(sp, addr);
+
+            return 20;
+            break;
+        }
+
     case 0x09: //ADD HL, BC
         {
             uint16_t hl = readRegister16(H, L);
             uint16_t bc = readRegister16(B, C);
 
+            unsetFlagBit(SUB_BIT);
+
             if((hl + bc) > 0xFF)
                 setFlagBit(CARRY_BIT);
 
+            if((hl & 0xF) + (bc & 0xF) > 0xF);
+                setFlagBit(HC_BIT);
+
+            writeReg16(H, L, (hl + bc));
+
+            return 8;
+            break;
         }
-        return 8;
-        break;
     case 0x0A:
         return 4;
         break;
@@ -215,12 +230,14 @@ uint8_t Z80::memRead(uint16_t addr)
     return ret;
 }
 
+//The GameBoy is Little-Endian, right???
 void Z80::memWrite16(uint16_t addr, uint16_t value)
 {
-    uint8_t val_hi = (value >> 8) & 0xFF;
-    uint8_t val_lo = value & 0xFF;
+    uint8_t val_hi = value & 0xFF;
+    uint8_t val_lo = (value >> 8) & 0xFF;
 
-    //TODO: How are these values then written to the memory???
+    memWrite(addr, val_hi);
+    memWrite(addr, val_lo);
 }
 
 uint16_t Z80::memRead16(uint16_t addr)

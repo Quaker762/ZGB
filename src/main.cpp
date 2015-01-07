@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdio.h>
 
-#include "CPU.h"
+#include "../include/CPU.h"
 
 Z80 cpu;
 
