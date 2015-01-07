@@ -1,0 +1,19 @@
+# depslib dependency file v1.0
+1420550309 source:e:\users\jesse\documents\c++\gameboy\main.cpp
+	<iostream>
+	<stdio.h>
+	"CPU.h"
+
+1420550289 source:e:\users\jesse\documents\c++\gameboy\cpu.cpp
+	"CPU.h"
+
+1420458050 e:\users\jesse\documents\c++\gameboy\cpu.h
+	<iostream>
+	<cstring>
+	<stdint.h>
+	<stdio.h>
+	"Global.h"
+
+1420456834 e:\users\jesse\documents\c++\gameboy\global.h
+	<cstdlib>
+
