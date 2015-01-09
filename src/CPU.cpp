@@ -28,37 +28,51 @@ uint8_t Z80::cycle()
     switch(opcode)
     {
     case 0x00: //NOP
-        incrementProgramCounter();
-        return 4; //4 Cycles required
-        break;
+        {
+            ++pc;
+            return 4; //4 Cycles required
+            break;
+        }
     case 0x01: //16-bit load to BC
-        writeReg16(B, C, memRead16(pc++));
-        setProgramCounter(getProgramCounter() + 3); //Next instruction
-        return 12;
-        break;
+        {
+            writeReg16(B, C, memRead16(pc++));
+
+            pc += 3;
+            return 12;
+            break;
+        }
     case 0x02: //Store A into address pointed to by BC
-        memWrite(readRegister16(B, C), readRegister(A));
-        incrementProgramCounter();
-        return 8;
-        break;
+        {
+            memWrite(readRegister16(B, C), readRegister(A));
+
+            ++pc;
+            return 8;
+            break;
+        }
     case 0x03: //INC BC
         {
             uint16_t regpair = readRegister16(B, C);
             regpair++;
             writeReg16(B, C, regpair);
+
+            ++pc;
             return 4;
             break;
         }
     case 0x04: //INC B
         {
             uint8_t b = readRegister(B);
+            ++b;
+
+            unsetFlagBit(SUB_BIT);
 
             if(!(b & 0xFF)) //Is our answer zero??
                 setFlagBit(ZERO_BIT);
 
-            unsetFlagBit(SUB_BIT);
+            if(b > 0xF)
+                setFlagBit(HC_BIT);
 
-            //TODO: How to check for a half-carry
+            ++pc;
             return 4;
             break;
         }
@@ -74,32 +88,46 @@ uint8_t Z80::cycle()
                 setFlagBit(HC_BIT);
 
             setFlagBit(SUB_BIT); //We performed a subtraction! Set sub bit
-
             writeReg(B, b);
 
+            ++pc;
             return 4;
             break;
         }
-    case 0x06:
-        writeReg(B, getProgramCounter() + 1);
-        incrementProgramCounter();
-        return 8;
-        break;
+    case 0x06: //Load immediate 8-bit value into B
+        {
+            writeReg(B, getProgramCounter() + 1);
+
+            pc += 2;
+            return 8;
+            break;
+        }
     case 0x07: //Rotate A Left Through Carry...
         {
-            //All Bits of FLAGS except carry are rest
+            uint8_t a = readRegister(A);
+            uint8_t bitEight = a & 0x80;
+
+            //Unset ZERO, SUB and HC bits
+            unsetFlagBit(SUB_BIT);
             unsetFlagBit(ZERO_BIT);
             unsetFlagBit(HC_BIT);
-            unsetFlagBit(SUB_BIT);
 
+            //Is this correct??
+            if(bitEight)
+                setFlagBit(CARRY_BIT);
+
+            a << 1; //Shift right once
+            a |= bitEight >> 7; //This is the actual rotate
+
+            writeReg(A, a);
             return 4;
             break;
         }
     case 0x08: //Load SP into 16-bit immediate address
         {
-            uint16_t addr = memRead16(pc, pc + 1);
-            memWrite16(sp, addr);
+            memWrite16(sp,  memRead16(pc + 1));
 
+            pc += 3;
             return 20;
             break;
         }
@@ -119,43 +147,175 @@ uint8_t Z80::cycle()
 
             writeReg16(H, L, (hl + bc));
 
+            incrementProgramCounter();
+
             return 8;
             break;
         }
-    case 0x0A:
-        return 4;
-        break;
-    case 0x0B:
-        return 4;
-        break;
-    case 0x0C:
-        return 4;
-        break;
-    case 0x0D:
-        return 4;
-        break;
-    case 0x0E:
-        return 4;
-        break;
-    case 0x0F:
-        return 4;
-        break;
-    case 0x10:
-        return 4;
-        break;
-    case 0x11:
-        return 4;
-        break;
-    case 0x12:
-        return 4;
-        break;
-    case 0x13:
-        return 4;
-        break;
-    case 0x14:
-        return 4;
-        break;
+    case 0x0A: //Load value at BC to register A
+        {
+            uint16_t addr = readRegister16(B, C);
+            writeReg(A, memRead(addr));
 
+            ++pc;
+            return 8;
+            break;
+        }
+    case 0x0B: //DEC BC
+        {
+            uint16_t bc = readRegister16(B, C);
+            --bc;
+
+            writeReg16(B, C, bc);
+
+            ++pc;
+            return 8;
+            break;
+        }
+    case 0x0C: //Increment C
+        {
+            uint8_t c = readRegister(C);
+            ++c;
+
+            unsetFlagBit(SUB_BIT);
+
+            if(!(c & 0xFF))
+                setFlagBit(ZERO_BIT);
+
+            if(c > 0xF)
+                setFlagBit(HC_BIT);
+
+            ++pc;
+            return 4;
+            break;
+        }
+    case 0x0D: //Decrement C
+        {
+            uint8_t c = readRegister(C);
+            --c;
+
+            setFlagBit(SUB_BIT); //We performed a subtraction
+
+            if(!(c & 0xFF))
+                setFlagBit(ZERO_BIT);
+
+            if(c > 0xF)
+                setFlagBit(HC_BIT);
+
+            ++pc;
+            return 4;
+            break;
+        }
+    case 0x0E: //Load immediate 8-bit value into C
+        {
+            writeReg(C, pc + 1);
+
+            pc += 2;
+            return 8;
+            break;
+        }
+    case 0x0F: //Rotate A right through carry
+        {
+            uint8_t a = readRegister(A);
+            uint8_t bitZero = a & 0x01;
+
+            //Unset ZERO, SUB and HC bits
+            unsetFlagBit(SUB_BIT);
+            unsetFlagBit(ZERO_BIT);
+            unsetFlagBit(HC_BIT);
+
+            //Is this correct??
+            if(bitZero)
+                setFlagBit(CARRY_BIT);
+
+            a >> 1; //Shift right once
+            a |= bitZero << 7; //This is the actual rotate
+
+            writeReg(A, a);
+            return 4;
+            break;
+        }
+    case 0x10:
+    {
+        //TODO: How to interpret this opcode
+        pc += 2;
+        return 4;
+        break;
+    }
+    case 0x11: //Load immediate 16-bit value into DE
+        {
+            writeReg16(D, E, memRead16(pc++));
+
+            pc += 3;
+            return 12;
+            break;
+        }
+    case 0x12: //Load A into address pointed to by DE
+        {
+            uint16_t addr = readRegister16(D, E);
+            memWrite(addr, readRegister(A));
+
+            ++pc;
+            return 8;
+            break;
+        }
+    case 0x13:
+        {
+           uint16_t de = readRegister16(D, E);
+           ++de;
+
+           writeReg16(D, E, de);
+
+           ++pc;
+           return 8;
+           break;
+        }
+    case 0x14: //Increment D
+        {
+            uint8_t d = readRegister(D);
+            ++d;
+
+            unsetFlagBit(SUB_BIT);
+
+            if(!(d & 0xFF))
+                setFlagBit(ZERO_BIT);
+
+            if(d > 0xF)
+                setFlagBit(HC_BIT);
+
+            ++pc;
+            return 4;
+            break;
+        }
+    case 0x15: //Decrement D
+        {
+            uint8_t d = readRegister(D);
+            --d;
+
+            setFlagBit(SUB_BIT);
+
+            if(!(d & 0xFF))
+                setFlagBit(ZERO_BIT);
+
+            if(d > 0xF)
+                setFlagBit(HC_BIT);
+
+            ++pc;
+            return 4;
+            break;
+        }
+    case 0x16: //Load immediate 8-bit value into D
+        {
+            writeReg(D, pc++);
+
+            pc += 2;
+            return 8;
+            break;
+        }
+    case 0x17:
+        {
+
+        }
     default:
         {
             std::cerr << "INVALID OPCODE: " << ram[pc];
