@@ -105,21 +105,23 @@ uint8_t Z80::cycle()
     case 0x07: //Rotate A Left Through Carry...
         {
             uint8_t a = readRegister(A);
-            uint8_t bitEight = a & 0x80;
+            uint8_t bit7 = a & 0x80;
 
-            //Unset ZERO, SUB and HC bits
-            unsetFlagBit(SUB_BIT);
             unsetFlagBit(ZERO_BIT);
+            unsetFlagBit(SUB_BIT);
             unsetFlagBit(HC_BIT);
 
-            //Is this correct??
-            if(bitEight)
+            if(bit7)
                 setFlagBit(CARRY_BIT);
 
-            a << 1; //Shift right once
-            a |= bitEight >> 7; //This is the actual rotate
+            a <<= 1; //Perform the shift
+            a |= bit7 >> 7;
 
-            writeReg(A, a);
+            if(!(a & 0xFF)) //Do a zero check after the shift
+                setFlagBit(ZERO_BIT);
+
+            writeReg(A, a); //Write the register back to the array
+
             return 4;
             break;
         }
@@ -217,21 +219,23 @@ uint8_t Z80::cycle()
     case 0x0F: //Rotate A right through carry
         {
             uint8_t a = readRegister(A);
-            uint8_t bitZero = a & 0x01;
+            uint8_t bit0 = a & 0x01;
 
-            //Unset ZERO, SUB and HC bits
-            unsetFlagBit(SUB_BIT);
             unsetFlagBit(ZERO_BIT);
+            unsetFlagBit(SUB_BIT);
             unsetFlagBit(HC_BIT);
 
-            //Is this correct??
-            if(bitZero)
+            if(bit0) //If bit0 == 1, set the carry bit to 1 as well
                 setFlagBit(CARRY_BIT);
 
-            a >> 1; //Shift right once
-            a |= bitZero << 7; //This is the actual rotate
+            a >>= 1; //Perform the shift
+            a |= bit0 << 7;
+
+            if(!(a & 0xFF)) //Do a zero check after the shift
+                setFlagBit(ZERO_BIT);
 
             writeReg(A, a);
+
             return 4;
             break;
         }
