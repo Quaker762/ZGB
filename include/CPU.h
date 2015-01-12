@@ -51,16 +51,13 @@ class Z80
 		HALF_CARRY = 0x20,	// Half-Carry
 		CARRY = 0x10	// Carry
 	};
+
 public:
 
 	Z80();
 	~Z80();
 
-	uint8_t     readRegister(uint8_t reg);
-	uint16_t    readRegister16(uint8_t reg1, uint8_t reg2);
 	void        updateFlags(); //Update the FLAGS booleans.
-	void        writeReg(uint8_t reg, uint8_t value); //Write to a regigster
-	void        writeReg16(uint8_t reghi, uint8_t reglo, uint16_t value);
 
 	void        setFlagBit(Flags flags);
 	void        unsetFlagBit(Flags flags);
@@ -89,7 +86,7 @@ private:
 	/**
 		Our 8, 8-bit CPU Registers; A, F(lags), B, C, D, E, H, L
 
-		These registers can be paired to create a 16-bit register combo
+		These registers can be paired to create a 16-bit register combo, as is done below
 		**/
 	Register16 AF, BC, DE, HL;
 
@@ -114,15 +111,6 @@ private:
 		**/
 	// Todo: Gameboy memory is "paged" or "banked" so different chunks may be -armed- at different moments of time.
 	uint8_t ram[0xFFFF];
-
-	/**
-		Our FLAG Booleans. These are used to check what
-		**/
-
-	bool zero = false; //Result of math operation is zero
-	bool sub = false; //Subtraction was performed last math instruction
-	bool hc = false; //Carry occurred from lower nibble in last math operation
-	bool carry = false; //Carry occurred last math operation, or REG A is smaller than value when CP instruction is executed
 };
 
 #endif // CPU_H_INCLUDED

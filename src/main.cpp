@@ -8,4 +8,8 @@ Z80 cpu;
 int main()
 {
     cpu.logEverything();
+
+    cpu.tick();
+
+
 }
