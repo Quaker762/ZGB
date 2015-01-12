@@ -316,9 +316,92 @@ uint8_t Z80::cycle()
             return 8;
             break;
         }
-    case 0x17:
+    case 0x17: //Rotate A left once. Bit 7 to carry flag and carry bit to bit 0 of A
         {
+            uint8_t a = readRegister(A);
+            uint8_t bit7 = a & 0x80;
 
+            unsetFlagBit(ZERO_BIT);
+            unsetFlagBit(SUB_BIT);
+            unsetFlagBit(HC_BIT);
+
+            if(bit7)
+                setFlagBit(CARRY_BIT);
+
+            uint8_t cbit = readRegister(F) & CARRY_FLAG_MASK;
+
+            a <<= 1; //Perform the shift
+            a |= cbit >> 4;
+
+            if(!(a & 0xFF)) //Do a zero check after the shift
+                setFlagBit(ZERO_BIT);
+
+            writeReg(A, a); //Write the register back to the array
+
+            ++pc;
+            return 4;
+            break;
+        }
+    case 0x18: //Add 8-bit immediate value to PC and jump to that address
+        {
+            uint16_t addr = pc + (++pc)
+
+            pc = addr;
+            return 8;
+            break;
+        }
+    case 0x19: //Add DE to HL
+        {
+            uint16_t de = readRegister16(D, E);
+            uint16_t hl = readRegister16(H, L);
+
+            if((hl + de) > 0xFF)
+                setFlagBit(CARRY_BIT);
+
+            if((hl & 0xF) + (de & 0xF) > 0xF);
+                setFlagBit(HC_BIT);
+
+            writeReg16(H, L, (hl + de));
+
+            ++pc;
+            return 8;
+            break;
+        }
+    case 0x1A: //Load value at Address in DE into reg A
+        {
+            uint8_t a = readRegister(A);
+            uint16_t addr = readRegister16(D, E);
+
+            a = memRead16(addr); //Read address in DE
+
+            writeReg(A, a);
+            ++pc;
+            return 8;
+            breakl
+        }
+    case 0x1B: //Decrement DE
+        {
+            uint16_t de = readRegister16(D, E);
+
+            --de;
+
+            ++pc;
+            return 8;
+            break;
+        }
+    case 0x1C:
+        {
+            uint8_t e = readRegister(E);
+
+            ++e;
+
+            unsetFlagBit(SUB_BIT);
+
+            if(!(e & 0xFF))
+                setFlagBit(ZERO_BIT);
+
+            if(e > 0xF)
+                setFlagBit(HC_BIT);
         }
     default:
         {
