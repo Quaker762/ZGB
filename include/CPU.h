@@ -37,8 +37,8 @@ class Z80
 	{
 		struct
 		{
-			uint8_t Low;
-			uint8_t High;
+			uint8_t lo;
+			uint8_t hi;
 		};
 		uint16_t Word;
 	} Register16;
@@ -57,18 +57,13 @@ public:
 	Z80();
 	~Z80();
 
-	void        updateFlags(); //Update the FLAGS booleans.
+	//void        updateFlags(); //Update the FLAGS booleans.
 
 	void        setFlagBit(Flags flags);
-	void        unsetFlagBit(Flags flags);
+	void        resetFlagBit(Flags flags);
 
 	//CPU functions
-	void        incrementStackPointer();
-	void        decrementStackPointer();
 	uint16_t    getStackPointer();
-	void        incrementProgramCounter();
-	void        decrementProgramCounter();
-	void        setProgramCounter(uint16_t value);
 	uint16_t    getProgramCounter();
 	void        resetCPU();
 
@@ -78,9 +73,9 @@ public:
 	uint16_t    memRead16(uint16_t addr);
 
 	//Our main CPU function
-	uint8_t tick();
+	uint8_t     tick();
 
-	void logEverything();
+	void        logEverything();
 
 private:
 	/**
