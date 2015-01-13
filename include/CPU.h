@@ -75,7 +75,7 @@ public:
 	//Our main CPU function
 	uint8_t     tick();
 
-	void        logEverything();
+	void        dumpCPU();
 
 private:
 	/**

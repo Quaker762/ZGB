@@ -75,13 +75,179 @@ uint8_t Z80::tick()
 
             if(!(BC.hi & 0xFF))
                 setFlagBit(ZERO);
+
+            if(BC.hi > 0xF)
+                setFlagBit(HALF_CARRY);
+
+            PC.Word++;
+            return 4;
+            break;
         }
     case 0x05: //Decrement B
         {
+            BC.hi--;
 
+            setFlagBit(SUB);
+
+            if(!(BC.hi & 0xFF))
+                setFlagBit(ZERO);
+
+            if(BC.hi > 0xF)
+                setFlagBit(HALF_CARRY);
+
+            PC.Word++;
+            return 4;
+            break;
+        }
+    case 0x06: //Load immediate 8-bit value into B
+        {
+            BC.hi = memRead(PC.Word++);
+
+            PC.Word += 2;
+            return 8;
+            break;
+        }
+    case 0x07: //Rotate A left once. Old Bit 7 to Carry and Bit 0
+        {
+            resetFlagBit(SUB);
+            resetFlagBit(HALF_CARRY);
+
+            AF.lo |= ((AF.hi & 0x80) >> 3); //This can be done with an "if" statement
+            AF.hi <<= 1; //Do the shift
+            AF.hi |= ((AF.lo & 0x10) >> 4); //Move bit 7 to bit 0 in A
+
+            if(!(AF.hi & 0xFF))
+                setFlagBit(ZERO);
+
+            PC.Word++;
+
+            return 4;
+            break;
+        }
+    case 0x08: //Load immediate 16-bit value into the stack pointer
+        {
+            SP.Word = memRead16(PC.Word++);
+
+            PC.Word += 3;
+            return 20;
+            break;
+        }
+    case 0x09: //Add BC to HL
+        {
+            HL.Word += BC.Word;
+
+            resetFlagBit(SUB);
+
+            if(HL.Word > 0xFF)
+                setFlagBit(CARRY);
+
+            if(HL.Word > 0xF)
+                setFlagBit(HALF_CARRY);
+
+            return 8;
+            break;
+        }
+    case 0x0A: //Load value pointed to by BC into A
+        {
+            AF.hi = memRead16(BC.Word);
+
+            return 8;
+            break;
+        }
+    case 0x0B: //Decrement BC
+    {
+        BC.Word--;
+
+        return 8;
+        break;
+    }
+    case 0x0C: //Increment C
+        {
+            BC.lo++;
+
+            resetFlagBit(SUB);
+
+            if(!(BC.lo & 0xFF))
+                setFlagBit(ZERO);
+
+            if(BC.lo > 0xF)
+                setFlagBit(HALF_CARRY);
+
+            PC.Word++;
+            return 4;
+            break;
+        }
+    case 0x0D: //Decrement C
+        {
+            BC.lo--;
+
+            setFlagBit(SUB);
+
+            if(!(BC.lo & 0xFF))
+                setFlagBit(ZERO);
+
+            if(BC.lo > 0xF)
+                setFlagBit(HALF_CARRY);
+
+            PC.Word++;
+            return 4;
+            break;
+        }
+    case 0x0E: //Load immediate 8-bit value into C
+        {
+            BC.lo = memRead(PC.Word++);
+
+            PC.Word += 2;
+            return 8;
+
+        }
+    case 0x0F: //Rotate A right once. Old Bit 0 to Carry and Bit 7
+        {
+            resetFlagBit(SUB);
+            resetFlagBit(HALF_CARRY);
+
+            AF.lo |= ((AF.hi & 0x01) << 4); //This can be done with an "if" statement
+            AF.hi >>= 1; //Do the shift
+            AF.hi |= ((AF.lo & 10) << 3); //Move bit 0 to bit 7 in A
+
+            if(!(AF.hi & 0xFF))
+                setFlagBit(ZERO);
+
+            PC.Word++;
+            return 4;
+            break;
+        }
+    case 0x10: //STOP
+        {
+
+        }
+    case 0x11: //Load immediate 16-bit value into DE
+        {
+            DE.Word = memRead16(PC.Word++);
+
+            PC.Word += 3;
+            return 12;
+            break;
+        }
+    case 0x12: //Load A into address pointed to by DE
+        {
+            memWrite(DE.Word, AF.hi);
+
+            PC.Word++;
+            return 8;
+            break;
+        }
+    case 0x13: //Increment DE
+        {
+            DE.Word++;
+
+            PC.Word++;
+            return 8;
+            break;
         }
     default:
         std::cerr << "Invalid opcode: " << (uint16_t)opcode << std::endl; //Cast as 16-bit so we don't print the
+        dumpCPU(); //Dump ALL CPU values to console
         exit(-1); //Exit the program with an error
     }
     return 4;
@@ -155,10 +321,26 @@ void Z80::resetFlagBit(Flags flags)
     AF.lo &= ~(flags);
 }
 
-//Dump EVERYTHING from the CPU to a nice table in console :)
-void Z80::logEverything()
+/**
+    Dump everything from the CPU
+**/
+void Z80::dumpCPU()
 {
-	std::cout << "A    |" << "F    |" << "B    |" << "C    |" << "D    |" << "E    |" << "H    |" << "L    |" << "SP    |" << "PC" << std::endl;
-	//cout doesn't like uint8_t (prints out the char value, I can't be stuffed casting...), so we're using printf!
-	printf("%x   %x    %x    %x    %x    %x    %x    %x    %x    %x", AF.hi, AF.lo, BC.hi, BC.lo, DE.hi, DE.lo, HL.hi, HL.lo, this->getStackPointer(), this->getProgramCounter());
+    std::cerr << "*DEBUG DUMP*:" << std::endl;
+
+    std::cout << "A: " << std::hex << static_cast<int>(AF.hi) << std::endl;
+    std::cout << "F: " << std::hex << static_cast<int>(AF.lo) << std::endl;
+    std::cout << "B: " << std::hex << static_cast<int>(BC.hi) << std::endl;
+    std::cout << "C: " << std::hex << static_cast<int>(BC.hi) << std::endl;
+    std::cout << "D: " << std::hex << static_cast<int>(DE.hi) << std::endl;
+    std::cout << "E: " << std::hex << static_cast<int>(DE.hi) << std::endl;
+    std::cout << "H: " << std::hex << static_cast<int>(HL.hi) << std::endl;
+    std::cout << "L: " << std::hex << static_cast<int>(HL.hi) << std::endl;
+
+    std::cout << "AF: " << std::hex << AF.Word << std::endl;
+    std::cout << "BC: " << std::hex << BC.Word << std::endl;
+    std::cout << "DE: " << std::hex << DE.Word << std::endl;
+    std::cout << "HL: " << std::hex << HL.Word << std::endl;
+    std::cout << "PC: " << std::hex << PC.Word << std::endl;
+    std::cout << "SP: " << std::hex << SP.Word << std::endl;
 }
