@@ -5,6 +5,7 @@
 **/
 Z80::Z80()
 {
+    mmu = new MMU();
     resetCPU(); //Reset, yo!
 }
 
@@ -24,7 +25,6 @@ void Z80::resetCPU()
     //Reset our PC and SP to their defaults
     PC.Word = 0x0100;
     SP.Word = 0xFFFE;
-    memset(ram, 0x00, 0xFFFF); //Zero our ram
 }
 
 /**
@@ -33,7 +33,7 @@ void Z80::resetCPU()
 **/
 uint8_t Z80::tick()
 {
-    uint8_t opcode = ram[PC.Word];
+    uint8_t opcode = mmu->memRead(PC.Word);
 
     switch(opcode)
     {
@@ -45,7 +45,7 @@ uint8_t Z80::tick()
         }
     case 0x01: //Load immediate 16-bit value into register BC
         {
-            BC.Word = memRead16(PC.Word++);
+            BC.Word = mmu->memRead16(PC.Word++);
 
             PC.Word += 3;
             return 12;
@@ -53,7 +53,7 @@ uint8_t Z80::tick()
         }
     case 0x02: //Load A into address stored in BC
         {
-            memWrite(BC.Word, AF.hi);
+            mmu->memWrite(BC.Word, AF.hi);
 
             PC.Word++;
             return 8;
@@ -101,7 +101,7 @@ uint8_t Z80::tick()
         }
     case 0x06: //Load immediate 8-bit value into B
         {
-            BC.hi = memRead(PC.Word++);
+            BC.hi = mmu->memRead(PC.Word++);
 
             PC.Word += 2;
             return 8;
@@ -126,7 +126,7 @@ uint8_t Z80::tick()
         }
     case 0x08: //Load immediate 16-bit value into the stack pointer
         {
-            SP.Word = memRead16(PC.Word++);
+            SP.Word = mmu->memRead16(PC.Word++);
 
             PC.Word += 3;
             return 20;
@@ -149,7 +149,7 @@ uint8_t Z80::tick()
         }
     case 0x0A: //Load value pointed to by BC into A
         {
-            AF.hi = memRead16(BC.Word);
+            AF.hi = mmu->memRead16(BC.Word);
 
             return 8;
             break;
@@ -195,7 +195,7 @@ uint8_t Z80::tick()
         }
     case 0x0E: //Load immediate 8-bit value into C
         {
-            BC.lo = memRead(PC.Word++);
+            BC.lo = mmu->memRead(PC.Word++);
 
             PC.Word += 2;
             return 8;
@@ -223,7 +223,7 @@ uint8_t Z80::tick()
         }
     case 0x11: //Load immediate 16-bit value into DE
         {
-            DE.Word = memRead16(PC.Word++);
+            DE.Word = mmu->memRead16(PC.Word++);
 
             PC.Word += 3;
             return 12;
@@ -231,7 +231,7 @@ uint8_t Z80::tick()
         }
     case 0x12: //Load A into address pointed to by DE
         {
-            memWrite(DE.Word, AF.hi);
+            mmu->memWrite(DE.Word, AF.hi);
 
             PC.Word++;
             return 8;
@@ -267,48 +267,6 @@ uint16_t Z80::getProgramCounter()
 uint16_t Z80::getStackPointer()
 {
     return SP.Word & 0xFFFF;
-}
-
-/*************************************************************************
-*
-*                           MEMORY FUNCTIONS
-*
-*************************************************************************/
-
-/**
-    Read an 8-bit value from memory
-**/
-uint8_t Z80::memRead(uint16_t addr)
-{
-    return ram[addr];
-}
-
-/**
-    Write an 8-bit value to memory
-**/
-void Z80::memWrite(uint16_t addr, uint8_t value)
-{
-    ram[addr] = value;
-}
-
-/**
-    Read a 16-bit value from memory
-**/
-uint16_t Z80::memRead16(uint16_t addr)
-{
-    uint8_t hi = ram[addr] & 0xFF;
-    uint8_t lo = (ram[addr] >> 8) & 0xFF;
-
-    return (hi << 8) | lo;
-}
-
-/**
-    Write a 16-bit value to memory
-**/
-void Z80::memWrite16(uint16_t addr, uint16_t value)
-{
-    ram[addr] = value >> 8;
-    ram[addr+1] = value & 0xFF;
 }
 
 void Z80::setFlagBit(Flags flags)

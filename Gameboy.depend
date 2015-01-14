@@ -17,14 +17,15 @@
 1420456834 e:\users\jesse\documents\c++\gameboy\global.h
 	<cstdlib>
 
-1421138358 source:e:\users\jesse\documents\github\zgb\src\cpu.cpp
+1421236970 source:e:\users\jesse\documents\github\zgb\src\cpu.cpp
 	"../include/CPU.h"
 
-1421137482 e:\users\jesse\documents\github\zgb\include\cpu.h
+1421235152 e:\users\jesse\documents\github\zgb\include\cpu.h
 	<iostream>
 	<cstring>
 	<stdint.h>
 	<stdio.h>
+	"MMU.h"
 	"Global.h"
 
 1420456834 e:\users\jesse\documents\github\zgb\include\global.h
@@ -34,4 +35,10 @@
 	<iostream>
 	<stdio.h>
 	"../include/CPU.h"
+
+1421237235 e:\users\jesse\documents\github\zgb\include\mmu.h
+	<stdint.h>
+
+1421236903 source:e:\users\jesse\documents\github\zgb\src\mmu.cpp
+	"../include/MMU.h"
 

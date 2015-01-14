@@ -6,6 +6,7 @@
 #include <stdint.h>
 #include <stdio.h>
 
+#include "MMU.h"
 #include "Global.h"
 
 //REGISTER INDEXES
@@ -78,6 +79,8 @@ public:
 	void        dumpCPU();
 
 private:
+
+    MMU* mmu;
 	/**
 		Our 8, 8-bit CPU Registers; A, F(lags), B, C, D, E, H, L
 
@@ -105,7 +108,7 @@ private:
 
 		**/
 	// Todo: Gameboy memory is "paged" or "banked" so different chunks may be -armed- at different moments of time.
-	uint8_t ram[0xFFFF];
+	//uint8_t ram[0xFFFF]; Put this in MMU.h to make everything cleaner
 };
 
 #endif // CPU_H_INCLUDED
