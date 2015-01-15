@@ -34,8 +34,12 @@
 			<Add option="-fexceptions" />
 		</Compiler>
 		<Unit filename="include/CPU.h" />
+		<Unit filename="include/Cartridge.h" />
 		<Unit filename="include/Global.h" />
+		<Unit filename="include/MMU.h" />
 		<Unit filename="src/CPU.cpp" />
+		<Unit filename="src/Cartridge.cpp" />
+		<Unit filename="src/MMU.cpp" />
 		<Unit filename="src/main.cpp" />
 		<Extensions>
 			<code_completion />
