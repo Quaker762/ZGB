@@ -3,6 +3,7 @@
 
 #include <fstream>
 #include <iostream>
+#include <cstring>
 #include "ROMHeader.h"
 
 class Cartridge
@@ -21,7 +22,7 @@ public:
 private:
     bool romLoaded = false;
     s_ROMHeaderInfo ROMHeaderInfo;
-    uint8_t rom0[0x8000]; //The actual ROM (32kB large, fixed ROM, no MBC :( )
+    uint8_t *rom0; //Will be dynamically allocated when we read the ROM into memory.
 };
 
 

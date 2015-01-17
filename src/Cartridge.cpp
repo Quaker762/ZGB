@@ -13,12 +13,24 @@ Cartridge::~Cartridge()
 //Load our cartridge into the ROM array
 void Cartridge::loadCart(char* fname)
 {
-    std::ifstream romfile(fname, std::ios::in | std::ios::binary);
+    std::ifstream romfile(fname, std::ios::in | std::ios::binary | std::ios::ate);
+    size_t filesize, bytesread;
 
     if(romfile.is_open())
     {
-        romfile.read((char*)rom0, sizeof(romfile));
+        filesize = romfile.tellg(); //Tells us the filesize in bytes.
+
+        rom0 = new uint8_t[filesize];
+        printf("ROM filesize: %i bytes.\n", filesize);
+        romfile.seekg(0, std::ios::beg);
+        romfile.read((char*)rom0, filesize);
+        bytesread = romfile.gcount();
+        printf("%i bytes read.\n", bytesread);
         romfile.close();
+    }
+    else {
+        printf("Error loading ROM file!\n");
+        return;
     }
 
     romLoaded = true;
