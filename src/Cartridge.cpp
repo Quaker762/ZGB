@@ -22,6 +22,7 @@ void Cartridge::loadCart(char* fname)
     }
 
     romLoaded = true;
+    getROMHeaderInfo();
 }
 
 void Cartridge::getROMHeaderInfo()
@@ -29,11 +30,17 @@ void Cartridge::getROMHeaderInfo()
     //Make sure our ROM is actually loaded first...
     if(romLoaded)
     {
-        m_MBCType = readRom(0x);
+        ROMHeaderInfo.MBCType = readRom(0x0147);
+        ROMHeaderInfo.ROMSize = readRom(0x0148);
+        ROMHeaderInfo.RAMSize = readRom(0x0149);
+        ROMHeaderInfo.region  = readRom(0x014A);
+        printf("MBC: 0x%x\nROM Size: 0x%x\nRAM Size: 0x%x\nRegion: 0x%x\n",
+            ROMHeaderInfo.MBCType, ROMHeaderInfo.ROMSize, ROMHeaderInfo.RAMSize,
+            ROMHeaderInfo.region);
     }
     else
     {
-        std::cerr << "Attempting to read header when ROM hasn't been loaded..."
+        std::cerr << "Attempting to read header when ROM hasn't been loaded...";
     }
 }
 
