@@ -37,6 +37,7 @@
 		<Unit filename="include/Cartridge.h" />
 		<Unit filename="include/Global.h" />
 		<Unit filename="include/MMU.h" />
+		<Unit filename="include/ROMHeader.h" />
 		<Unit filename="src/CPU.cpp" />
 		<Unit filename="src/Cartridge.cpp" />
 		<Unit filename="src/MMU.cpp" />

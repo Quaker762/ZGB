@@ -11,7 +11,7 @@ int main()
 {
     cpu.dumpCPU();
 
-    cart->loadCart("roms/tetris.gb");
+    cart->loadCart("roms/pokemonred.gb");
 
     std::cout << (uint16_t)cart->GameRom()[0x0001];
 }
