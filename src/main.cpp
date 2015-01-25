@@ -5,14 +5,12 @@
 #include "../include/Cartridge.h"
 
 Z80 cpu;
-Cartridge* cart = new Cartridge();
+Cartridge* cart = new Cartridge("roms/tetris.gb");
 
 int main()
 {
     cpu.dumpCPU();
 
-    cart->loadCart("roms/tetris.gb");
-
-    std::cout << (uint16_t)cart->GameRom()[0x0001];
+    return 0;
 }
 

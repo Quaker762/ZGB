@@ -62,6 +62,7 @@ public:
 
 	void        setFlagBit(Flags flags);
 	void        resetFlagBit(Flags flags);
+	bool        isFlagSet(Flags flags);
 
 	//CPU functions
 	uint16_t    getStackPointer();
