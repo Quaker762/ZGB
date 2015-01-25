@@ -68,15 +68,12 @@ public:
 	uint16_t    getProgramCounter();
 	void        resetCPU();
 
-	void        memWrite(uint16_t addr, uint8_t value);
-	uint8_t     memRead(uint16_t addr);
-	void        memWrite16(uint16_t addr, uint16_t value);
-	uint16_t    memRead16(uint16_t addr);
-
 	//Our main CPU function
 	uint8_t     tick();
 
 	void        dumpCPU();
+
+	bool        isFlagSet(Flags flags);
 
 private:
 
